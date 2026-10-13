@@ -1,0 +1,37 @@
+/**
+ * 全局SCSS变量
+ * 定义项目中使用的颜色、字体、间距等设计令牌
+ */
+
+// ========== 主题颜色 ==========
+$primary-color: #409eff;       // 主色调
+$success-color: #67c23a;       // 成功色
+$warning-color: #e6a23c;       // 警告色
+$danger-color: #f56c6c;        // 危险色
+$info-color: #909399;          // 信息色
+
+// ========== 文字颜色 ==========
+$text-primary: #303133;        // 主要文字
+$text-regular: #606266;        // 常规文字
+$text-secondary: #909399;      // 次要文字
+$text-placeholder: #c0c4cc;    // 占位文字
+
+// ========== 背景色 ==========
+$bg-color: #f5f7fa;            // 页面背景
+$bg-white: #ffffff;            // 白色背景
+$bg-dark: #1a1a2e;             // 深色背景（代码编辑器区域）
+
+// ========== 布局 ==========
+$header-height: 60px;          // 顶部导航高度
+$sidebar-width: 220px;         // 侧边栏宽度
+$sidebar-collapsed-width: 64px; // 侧边栏折叠宽度
+
+// ========== 圆角 ==========
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+// ========== 阴影 ==========
+$box-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+$box-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);

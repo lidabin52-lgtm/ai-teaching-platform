@@ -1,0 +1,100 @@
+# ==========================================
+# Docker Compose 配置文件
+# 整合前端、后端、MySQL 三个服务
+# ==========================================
+
+version: '3.8'
+
+services:
+  # MySQL 数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: frontend-edu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-frontend_edu}
+      MYSQL_USER: ${MYSQL_USER:-edu_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-edu_pass123}
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - edu-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 后端 API 服务
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: frontend-edu-backend
+    restart: unless-stopped
+    environment:
+      # 数据库配置
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-frontend_edu}
+      DB_USER: ${MYSQL_USER:-edu_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-edu_pass123}
+      # DeepSeek AI 配置
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      # JWT 配置
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      # Flask 配置
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+      # 日志级别
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server/logs:/app/logs
+    networks:
+      - edu-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # 前端 Nginx 服务
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: frontend-edu-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - edu-network
+    depends_on:
+      - backend
+
+# 数据卷定义
+volumes:
+  mysql_data:
+    driver: local
+
+# 网络定义
+networks:
+  edu-network:
+    driver: bridge
